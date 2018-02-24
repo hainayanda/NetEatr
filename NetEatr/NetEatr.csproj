@@ -5,9 +5,11 @@
     <Version>0.0.3</Version>
     <Description>RESTful web service consumer for C#</Description>
     <PackageProjectUrl>https://github.com/nayanda1/NetEatr</PackageProjectUrl>
-    <PackageIconUrl>https://github.com/nayanda1/NetEatr/blob/master/net.eatr.logo.png</PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/nayanda1/NetEatr/master/net.eatr.logo.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/nayanda1/NetEatr</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageTags>eatr http consumer json restful rest</PackageTags>
+    <RepositoryType>Git</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -7,6 +7,9 @@ using NetEatr.Base;
 
 namespace NetEatr.Builder
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class HttpRequest : IHttpRequest<HttpRequest>
     {
 
@@ -16,12 +19,24 @@ namespace NetEatr.Builder
             Method = method;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public HttpRequest AddAuthorization(string token)
         {
             return AddHeaders("Authorization", "bearer " + token);
         }
 
+
         private Dictionary<string, string> Headers;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public HttpRequest AddHeaders(string key, string value)
         {
             if (Headers == null) Headers = new Dictionary<string, string>();
@@ -30,6 +45,12 @@ namespace NetEatr.Builder
         }
 
         private Dictionary<string, string> Parameters;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public HttpRequest AddParam(string key, string value)
         {
             if (Parameters == null) Parameters = new Dictionary<string, string>();
@@ -51,6 +72,11 @@ namespace NetEatr.Builder
             return toUrl + parameters;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="headers"></param>
+        /// <returns></returns>
         public HttpRequest SetHeaders(Dictionary<string, string> headers)
         {
             Headers = headers;
@@ -58,20 +84,35 @@ namespace NetEatr.Builder
         }
 
         private Action<HttpWebRequest> OnBeforeSending = (_) => { };
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="onBeforeSending"></param>
+        /// <returns></returns>
         public HttpRequest SetOnBeforeSending(Action<HttpWebRequest> onBeforeSending)
         {
             OnBeforeSending = onBeforeSending;
             return this;
         }
-
+        
         private Action<Exception> OnException;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="onException"></param>
+        /// <returns></returns>
         public HttpRequest SetOnException(Action<Exception> onException)
         {
             OnException = onException;
             return this;
         }
-
+        
         private Action<float> OnProgress = (_) => { };
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="onProgress"></param>
+        /// <returns></returns>
         public HttpRequest SetOnProgress(Action<float> onProgress)
         {
             OnProgress = onProgress;
@@ -80,6 +121,12 @@ namespace NetEatr.Builder
 
         private Type TypeOfResponse = null;
         private Action<Response> OnResponded = (_) => { };
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="onResponded"></param>
+        /// <returns></returns>
         public HttpRequest SetOnResponded<V>(Action<RestResponse<V>> onResponded)
         {
             TypeOfResponse = typeof(RestResponse<V>);
@@ -89,6 +136,11 @@ namespace NetEatr.Builder
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="onResponded"></param>
+        /// <returns></returns>
         public HttpRequest SetOnResponded(Action<Response> onResponded)
         {
             TypeOfResponse = null;
@@ -96,6 +148,11 @@ namespace NetEatr.Builder
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
         public HttpRequest SetParams(Dictionary<string, string> parameters)
         {
             Parameters = parameters;
@@ -103,6 +160,11 @@ namespace NetEatr.Builder
         }
 
         private int Timeout;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
         public HttpRequest SetTimeout(int timeout)
         {
             Timeout = timeout;
@@ -110,12 +172,21 @@ namespace NetEatr.Builder
         }
 
         private string Url;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public HttpRequest SetUrl(string url)
         {
             Url = url;
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public Task<Response> GetAsyncExecute()
         {
             var task = new Task<Response>(() =>
@@ -126,6 +197,11 @@ namespace NetEatr.Builder
             return task;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public Task<RestResponse<T>> GetAsyncExecute<T>()
         {
             var task = new Task<RestResponse<T>>(() =>
@@ -136,6 +212,10 @@ namespace NetEatr.Builder
             return task;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="onFinished"></param>
         public void AsyncExecute(Action<Response> onFinished)
         {
             new Task(() =>
@@ -145,6 +225,11 @@ namespace NetEatr.Builder
             }).Start();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="onFinished"></param>
         public void AsyncExecute<T>(Action<RestResponse<T>> onFinished)
         {
             new Task(() =>
@@ -154,11 +239,18 @@ namespace NetEatr.Builder
             }).Start();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void AsyncExecute()
         {
             new Task(() => AwaitExecute()).Start();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public Response AwaitExecute()
         {
             try
@@ -216,6 +308,11 @@ namespace NetEatr.Builder
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public RestResponse<T> AwaitExecute<T>()
         {
             try
@@ -264,6 +361,11 @@ namespace NetEatr.Builder
         }
 
         private Action OnTimeout;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="onTimeout"></param>
+        /// <returns></returns>
         public HttpRequest SetOnTimeout(Action onTimeout)
         {
             OnTimeout = onTimeout;
