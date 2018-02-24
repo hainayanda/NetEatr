@@ -40,7 +40,7 @@ namespace NetEatr.Builder
         private static string AddParameters(string toUrl, Dictionary<string, string> withParams)
         {
             var parameters = "";
-            foreach(var biConsumer in withParams)
+            foreach (var biConsumer in withParams)
             {
                 var key = Uri.EscapeDataString(biConsumer.Key);
                 var value = Uri.EscapeDataString(biConsumer.Value);
@@ -78,12 +78,21 @@ namespace NetEatr.Builder
             return this;
         }
 
-        private Type ResponseType;
+        private Type TypeOfResponse = null;
         private Action<Response> OnResponded = (_) => { };
-        public HttpRequest SetOnResponded<V>(Action<V> onResponded) where V : Response
+        public HttpRequest SetOnResponded<V>(Action<RestResponse<V>> onResponded)
         {
-            ResponseType = typeof(V);
-            OnResponded = (response) => { onResponded((V)response); };
+            TypeOfResponse = typeof(RestResponse<V>);
+            OnResponded = (response) => {
+                onResponded((RestResponse<V>)response);
+            };
+            return this;
+        }
+
+        public HttpRequest SetOnResponded(Action<Response> onResponded)
+        {
+            TypeOfResponse = null;
+            OnResponded = onResponded;
             return this;
         }
 
@@ -166,9 +175,20 @@ namespace NetEatr.Builder
                 OnProgress(0.666667f);
                 var webResponse = (HttpWebResponse)task.Result;
                 OnProgress(0.833333f);
-                var response = new Response(webResponse);
-                OnProgress(1f);
-                return response;
+                if (TypeOfResponse == null)
+                {
+                    var response = new Response(webResponse);
+                    OnResponded(response);
+                    OnProgress(1f);
+                    return response;
+                }
+                else
+                {
+                    var response = (Response)Activator.CreateInstance(TypeOfResponse, webResponse);
+                    OnResponded(response);
+                    OnProgress(1f);
+                    return response;
+                }
             }
             catch (Exception exception)
             {
@@ -213,6 +233,7 @@ namespace NetEatr.Builder
                 var webResponse = (HttpWebResponse)task.Result;
                 OnProgress(0.833333f);
                 var response = new RestResponse<T>(webResponse);
+                OnResponded(response);
                 OnProgress(1f);
                 return response;
             }

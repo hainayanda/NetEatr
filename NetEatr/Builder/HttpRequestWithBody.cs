@@ -96,12 +96,6 @@ namespace NetEatr.Builder
             return this;
         }
 
-        public HttpRequestWithBody SetOnResponded<V>(Action<V> onResponded) where V : Response
-        {
-            httpRequestDelegate.SetOnResponded(onResponded);
-            return this;
-        }
-
         public HttpRequestWithBody SetParams(Dictionary<string, string> parameters)
         {
             httpRequestDelegate.SetParams(parameters);
@@ -176,6 +170,18 @@ namespace NetEatr.Builder
         public HttpRequestWithBody SetOnTimeout(Action onTimeout)
         {
             httpRequestDelegate.SetOnTimeout(onTimeout);
+            return this;
+        }
+
+        public HttpRequestWithBody SetOnResponded<V>(Action<RestResponse<V>> onResponded)
+        {
+            httpRequestDelegate.SetOnResponded(onResponded);
+            return this;
+        }
+
+        public HttpRequestWithBody SetOnResponded(Action<Response> onResponded)
+        {
+            httpRequestDelegate.SetOnResponded(onResponded);
             return this;
         }
     }

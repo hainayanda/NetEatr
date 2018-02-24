@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.IO;
 using System.Xml;
+using Newtonsoft.Json.Serialization;
 
 namespace NetEatr.Digester
 {
@@ -31,7 +32,7 @@ namespace NetEatr.Digester
         {
             get
             {
-                if(ParsedXml != null)
+                if (ParsedXml != null)
                 {
                     return true;
                 }
@@ -75,7 +76,7 @@ namespace NetEatr.Digester
 
         public Response(HttpWebResponse webResponse)
         {
-            if(webResponse != null)
+            if (webResponse != null)
             {
                 RawResponse = webResponse;
                 StatusCode = webResponse.StatusCode.GetHashCode();
@@ -88,21 +89,4 @@ namespace NetEatr.Digester
             Exception = exception;
         }
     }
-
-    public class RestResponse<T> : Response
-    {
-        public RestResponse(HttpWebResponse webResponse) : base(webResponse) { }
-
-        public RestResponse(HttpWebResponse webResponse, Exception exception) : base(webResponse, exception) { }
-
-        public T JsonBody
-        {
-            get
-            {
-                return JsonConvert.DeserializeObject<T>(RawBody);
-            }
-        }
-    }
-
-
 }

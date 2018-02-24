@@ -1,7 +1,7 @@
 ﻿
 namespace NetEatr.Builder
 {
-    public static class HttpBuilder
+    public static class HttpRequestBuilder
     {
         public static HttpRequest HttpGet
         {
