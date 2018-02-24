@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NetEatr.Digester;
 using Newtonsoft.Json;
 using NetEatr.Base;
+using System.Xml;
 
 namespace NetEatr.Builder
 {
@@ -43,6 +44,13 @@ namespace NetEatr.Builder
             if (form.Length >= 0) form.Remove(form.Length - 1);
             Body = form;
             return AddHeaders("content-type", "application/x-www-form-urlencoded");
+        }
+
+        public HttpRequestWithBody AddXmlBody(XmlDocument xml)
+        {
+            Body = xml.ToString();
+            return AddHeaders("content-type", "text/xml; encoding='utf-8'");
+
         }
 
         public HttpRequestWithBody AddHeaders(string key, string value)
