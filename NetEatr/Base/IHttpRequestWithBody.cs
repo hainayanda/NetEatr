@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Xml;
 
 namespace NetEatr.Base
 {
@@ -9,5 +10,7 @@ namespace NetEatr.Base
         T AddJsonBody<V>(V obj);
 
         T AddFormUrlEncoded(Dictionary<string, string> forms);
+
+        T AddXmlBody(XmlDocument xml);
     }
 }

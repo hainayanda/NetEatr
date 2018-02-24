@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Net;
 using System.IO;
+using System.Xml;
 
 namespace NetEatr.Digester
 {
@@ -10,6 +11,47 @@ namespace NetEatr.Digester
         public HttpWebResponse RawResponse { get; protected set; }
 
         public string RawBody { get; protected set; }
+
+        private XmlDocument ParsedXml;
+        public XmlDocument BodyAsXmlDoc
+        {
+            get
+            {
+                if (ParsedXml == null)
+                {
+                    var xml = new XmlDocument();
+                    xml.LoadXml(RawBody);
+                    return xml;
+                }
+                else return ParsedXml;
+            }
+        }
+
+        public bool IsXml
+        {
+            get
+            {
+                if(ParsedXml != null)
+                {
+                    return true;
+                }
+                else if (!string.IsNullOrEmpty(RawBody) && RawBody.TrimStart().StartsWith("<") && RawBody.TrimEnd().EndsWith(">"))
+                {
+                    try
+                    {
+                        var xml = new XmlDocument();
+                        xml.LoadXml(RawBody);
+                        ParsedXml = xml;
+                        return true;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+                else return false;
+            }
+        }
 
         public int StatusCode { get; protected set; }
 
