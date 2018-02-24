@@ -10,6 +10,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>eatr http consumer json restful rest</PackageTags>
     <RepositoryType>Git</RepositoryType>
+    <Authors>Nayanda Haberty</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
