@@ -35,13 +35,13 @@ for changelog check [here](CHANGELOG.md)
 run this on package manager console
 
 ```
-Install-Package NetEatr -Version 0.0.3
+Install-Package NetEatr -Version 0.0.4
 ```
 ### .Net CLI
 run this on .Net CLI
 
 ```
-dotnet add package NetEatr --version 0.0.3
+dotnet add package NetEatr --version 0.0.4
 ```
 ### Manually
 1. Clone this repository.
