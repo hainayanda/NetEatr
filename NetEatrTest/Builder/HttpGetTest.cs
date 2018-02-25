@@ -29,6 +29,7 @@ namespace NetEatrTest
             var isException = false;
             var progressCount = 0;
             var finalProgress = 0f;
+
             HttpRequestBuilder.HttpGet.SetUrl(URL).AddHeaders(HEADER_KEY, HEADER_VALUE)
                 .AddParam(PARAM_KEY, PARAM_VALUE)
                 .SetOnProgress((progress) =>

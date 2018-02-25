@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 
 namespace NetEatr.Digester
 {
@@ -13,6 +11,8 @@ namespace NetEatr.Digester
     /// <typeparam name="T">Type of Json container</typeparam>
     public class RestResponse<T> : Response
     {
+        private T _JsonBody = default(T);
+
         /// <summary>
         /// Primary constructor
         /// </summary>
@@ -25,8 +25,6 @@ namespace NetEatr.Digester
         /// <param name="webResponse"></param>
         /// <param name="exception"></param>
         public RestResponse(HttpWebResponse webResponse, Exception exception) : base(webResponse, exception) { }
-
-        private T _JsonBody = default(T);
 
         /// <summary>
         /// Parsed string of Json in object of T

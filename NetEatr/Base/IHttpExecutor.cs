@@ -10,19 +10,6 @@ namespace NetEatr.Base
     public interface IHttpExecutor
     {
         /// <summary>
-        /// Method to get asynchronous execution in form of task
-        /// </summary>
-        /// <returns>Task which have return type of Response</returns>
-        Task<Response> GetAsyncExecute();
-
-        /// <summary>
-        /// Method to get asynchronous execution in form of task
-        /// </summary>
-        /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
-        /// <returns>Task which have return type of RestResponse of T</returns>
-        Task<RestResponse<T>> GetAsyncExecute<T>();
-
-        /// <summary>
         /// Method to execute HttpRequest asynchronously
         /// </summary>
         /// <param name="onFinished">Delegate to run when execution is finished</param>
@@ -52,5 +39,18 @@ namespace NetEatr.Base
         /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
         /// <returns>RestResponse of T</returns>
         RestResponse<T> AwaitExecute<T>();
+
+        /// <summary>
+        /// Method to get asynchronous execution in form of task
+        /// </summary>
+        /// <returns>Task which have return type of Response</returns>
+        Task<Response> GetAsyncExecute();
+
+        /// <summary>
+        /// Method to get asynchronous execution in form of task
+        /// </summary>
+        /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
+        /// <returns>Task which have return type of RestResponse of T</returns>
+        Task<RestResponse<T>> GetAsyncExecute<T>();
     }
 }

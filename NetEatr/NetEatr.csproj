@@ -2,15 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.0.3</Version>
-    <Description>RESTful web service consumer for C#</Description>
+    <Version>0.0.5</Version>
+    <Description>RESTful web service consumer for .Net C#</Description>
     <PackageProjectUrl>https://github.com/nayanda1/NetEatr</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/nayanda1/NetEatr/master/net.eatr.logo.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/nayanda1/NetEatr</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageTags>eatr http consumer json restful rest</PackageTags>
+    <PackageTags>eatr http consumer json restful rest request web service</PackageTags>
     <RepositoryType>Git</RepositoryType>
     <Authors>Nayanda Haberty</Authors>
+    <PackageReleaseNotes>added getter setter for simpler approach</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

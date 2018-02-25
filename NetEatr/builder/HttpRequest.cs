@@ -1,42 +1,133 @@
-﻿using System;
+﻿using NetEatr.Base;
+using NetEatr.Digester;
+using System;
 using System.Collections.Generic;
 using System.Net;
-using NetEatr.Digester;
 using System.Threading.Tasks;
-using NetEatr.Base;
 
 namespace NetEatr.Builder
 {
     /// <summary>
-    /// 
+    /// Basic HttpRequest Object
     /// </summary>
     public class HttpRequest : IHttpRequest<HttpRequest>
     {
+        private IDictionary<string, string> _Headers;
+
+        private IDictionary<string, string> _Parameters;
+
+        private int _Timeout = 10000;
+
+        private string _Url;
 
         private string Method;
+
+        private Action<HttpWebRequest> OnBeforeSending = (_) => { };
+
+        private Action<Exception> OnException;
+
+        private Action<float> OnProgress = (_) => { };
+
+        private Action<Response> OnResponded = (_) => { };
+
+        private Action OnTimeout;
+
+        private Type TypeOfResponse = null;
+
         internal HttpRequest(string method)
         {
             Method = method;
         }
 
         /// <summary>
-        /// 
+        /// Gets or sets the headers.
+        /// </summary>
+        /// <value>
+        /// The headers.
+        /// </value>
+        /// <exception cref="ArgumentNullException">Headers cannot be null</exception>
+        public IDictionary<string, string> Headers
+        {
+            get => _Headers;
+            set
+            {
+                if (value == null) throw new ArgumentNullException("Headers cannot be null");
+                else _Headers = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the parameters.
+        /// </summary>
+        /// <value>
+        /// The parameters.
+        /// </value>
+        /// <exception cref="ArgumentNullException">Headers cannot be null</exception>
+        public IDictionary<string, string> Parameters
+        {
+            get => _Parameters;
+            set
+            {
+                if (value == null) throw new ArgumentNullException("Headers cannot be null");
+                else _Parameters = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the timeout.
+        /// </summary>
+        /// <value>
+        /// The timeout.
+        /// </value>
+        /// <exception cref="ArgumentException">Timeout is too small</exception>
+        public int Timeout
+        {
+            get => _Timeout;
+            set
+            {
+                if (value < 100) throw new ArgumentException("Timeout is too small");
+                else _Timeout = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        /// <exception cref="ArgumentNullException">Url cannot be null</exception>
+        public string Url
+        {
+            get => _Url;
+            set
+            {
+                if (value == null) throw new ArgumentNullException("Url cannot be null");
+                else _Url = value;
+            }
+        }
+
+        /// <summary>
+        /// Method to add authorization
+        /// it will automatically using a bearer oAuth authorization
         /// </summary>
         /// <param name="token"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequest AddAuthorization(string token)
         {
             return AddHeaders("Authorization", "bearer " + token);
         }
 
-
-        private Dictionary<string, string> Headers;
         /// <summary>
-        /// 
+        /// Method to add headers
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequest AddHeaders(string key, string value)
         {
             if (Headers == null) Headers = new Dictionary<string, string>();
@@ -44,13 +135,15 @@ namespace NetEatr.Builder
             return this;
         }
 
-        private Dictionary<string, string> Parameters;
         /// <summary>
-        /// 
+        /// Method to add parameter
+        /// it will be automatically encoded the parameter
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequest AddParam(string key, string value)
         {
             if (Parameters == null) Parameters = new Dictionary<string, string>();
@@ -58,164 +151,10 @@ namespace NetEatr.Builder
             return this;
         }
 
-        private static string AddParameters(string toUrl, Dictionary<string, string> withParams)
-        {
-            var parameters = "";
-            foreach (var biConsumer in withParams)
-            {
-                var key = Uri.EscapeDataString(biConsumer.Key);
-                var value = Uri.EscapeDataString(biConsumer.Value);
-                parameters += key + "=" + value + "&";
-            }
-            if (parameters.Length >= 0) parameters.Remove(parameters.Length - 1);
-            if (parameters.Length >= 0) parameters = "?" + parameters;
-            return toUrl + parameters;
-        }
-
         /// <summary>
-        /// 
+        /// Method to execute HttpRequest asynchronously
         /// </summary>
-        /// <param name="headers"></param>
-        /// <returns></returns>
-        public HttpRequest SetHeaders(Dictionary<string, string> headers)
-        {
-            Headers = headers;
-            return this;
-        }
-
-        private Action<HttpWebRequest> OnBeforeSending = (_) => { };
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onBeforeSending"></param>
-        /// <returns></returns>
-        public HttpRequest SetOnBeforeSending(Action<HttpWebRequest> onBeforeSending)
-        {
-            OnBeforeSending = onBeforeSending;
-            return this;
-        }
-        
-        private Action<Exception> OnException;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onException"></param>
-        /// <returns></returns>
-        public HttpRequest SetOnException(Action<Exception> onException)
-        {
-            OnException = onException;
-            return this;
-        }
-        
-        private Action<float> OnProgress = (_) => { };
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onProgress"></param>
-        /// <returns></returns>
-        public HttpRequest SetOnProgress(Action<float> onProgress)
-        {
-            OnProgress = onProgress;
-            return this;
-        }
-
-        private Type TypeOfResponse = null;
-        private Action<Response> OnResponded = (_) => { };
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="V"></typeparam>
-        /// <param name="onResponded"></param>
-        /// <returns></returns>
-        public HttpRequest SetOnResponded<V>(Action<RestResponse<V>> onResponded)
-        {
-            TypeOfResponse = typeof(RestResponse<V>);
-            OnResponded = (response) => {
-                onResponded((RestResponse<V>)response);
-            };
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onResponded"></param>
-        /// <returns></returns>
-        public HttpRequest SetOnResponded(Action<Response> onResponded)
-        {
-            TypeOfResponse = null;
-            OnResponded = onResponded;
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public HttpRequest SetParams(Dictionary<string, string> parameters)
-        {
-            Parameters = parameters;
-            return this;
-        }
-
-        private int Timeout;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="timeout"></param>
-        /// <returns></returns>
-        public HttpRequest SetTimeout(int timeout)
-        {
-            Timeout = timeout;
-            return this;
-        }
-
-        private string Url;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="url"></param>
-        /// <returns></returns>
-        public HttpRequest SetUrl(string url)
-        {
-            Url = url;
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public Task<Response> GetAsyncExecute()
-        {
-            var task = new Task<Response>(() =>
-            {
-                return AwaitExecute();
-            });
-            task.Start();
-            return task;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public Task<RestResponse<T>> GetAsyncExecute<T>()
-        {
-            var task = new Task<RestResponse<T>>(() =>
-            {
-                return AwaitExecute<T>();
-            });
-            task.Start();
-            return task;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onFinished"></param>
+        /// <param name="onFinished">Delegate to run when execution is finished</param>
         public void AsyncExecute(Action<Response> onFinished)
         {
             new Task(() =>
@@ -226,10 +165,10 @@ namespace NetEatr.Builder
         }
 
         /// <summary>
-        /// 
+        /// Method to execute HttpRequest asynchronously
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="onFinished"></param>
+        /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
+        /// <param name="onFinished">Delegate to run when execution is finished</param>
         public void AsyncExecute<T>(Action<RestResponse<T>> onFinished)
         {
             new Task(() =>
@@ -240,7 +179,7 @@ namespace NetEatr.Builder
         }
 
         /// <summary>
-        /// 
+        /// Method to execute HttpRequest asynchronously
         /// </summary>
         public void AsyncExecute()
         {
@@ -248,9 +187,11 @@ namespace NetEatr.Builder
         }
 
         /// <summary>
-        /// 
+        /// Method to execute HttpRequest synchronously
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Response object
+        /// </returns>
         public Response AwaitExecute()
         {
             try
@@ -309,10 +250,12 @@ namespace NetEatr.Builder
         }
 
         /// <summary>
-        /// 
+        /// Method to execute HttpRequest synchronously
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
+        /// <returns>
+        /// RestResponse of T
+        /// </returns>
         public RestResponse<T> AwaitExecute<T>()
         {
             try
@@ -360,16 +303,189 @@ namespace NetEatr.Builder
             }
         }
 
-        private Action OnTimeout;
         /// <summary>
-        /// 
+        /// Method to get asynchronous execution in form of task
+        /// </summary>
+        /// <returns>
+        /// Task which have return type of Response
+        /// </returns>
+        public Task<Response> GetAsyncExecute()
+        {
+            var task = new Task<Response>(() =>
+            {
+                return AwaitExecute();
+            });
+            task.Start();
+            return task;
+        }
+
+        /// <summary>
+        /// Method to get asynchronous execution in form of task
+        /// </summary>
+        /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
+        /// <returns>
+        /// Task which have return type of RestResponse of T
+        /// </returns>
+        public Task<RestResponse<T>> GetAsyncExecute<T>()
+        {
+            var task = new Task<RestResponse<T>>(() =>
+            {
+                return AwaitExecute<T>();
+            });
+            task.Start();
+            return task;
+        }
+
+        /// <summary>
+        /// Method to set headers
+        /// </summary>
+        /// <param name="headers">dictionary of header in form of key - value</param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetHeaders(IDictionary<string, string> headers)
+        {
+            Headers = headers;
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set delegate to run right before sending
+        /// </summary>
+        /// <param name="onBeforeSending"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetOnBeforeSending(Action<HttpWebRequest> onBeforeSending)
+        {
+            OnBeforeSending = onBeforeSending;
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the delegate to run rigth after exception
+        /// </summary>
+        /// <param name="onException"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetOnException(Action<Exception> onException)
+        {
+            OnException = onException;
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set delegate to run every progress
+        /// progress start with 0 and end in 1
+        /// </summary>
+        /// <param name="onProgress"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetOnProgress(Action<float> onProgress)
+        {
+            OnProgress = onProgress;
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the delegate to run right after get response
+        /// </summary>
+        /// <typeparam name="V"></typeparam>
+        /// <param name="onResponded"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetOnResponded<V>(Action<RestResponse<V>> onResponded)
+        {
+            TypeOfResponse = typeof(RestResponse<V>);
+            OnResponded = (response) =>
+            {
+                onResponded((RestResponse<V>)response);
+            };
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the delegate to run right after get response
+        /// </summary>
+        /// <param name="onResponded"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetOnResponded(Action<Response> onResponded)
+        {
+            TypeOfResponse = null;
+            OnResponded = onResponded;
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the delegate to run right after timeout
         /// </summary>
         /// <param name="onTimeout"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequest SetOnTimeout(Action onTimeout)
         {
             OnTimeout = onTimeout;
             return this;
+        }
+
+        /// <summary>
+        /// Method to set url parameter
+        /// it will be automatically encoded the parameter
+        /// </summary>
+        /// <param name="parameters">dictionary of key - value</param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetParams(IDictionary<string, string> parameters)
+        {
+            Parameters = parameters;
+            return this;
+        }
+
+        /// <summary>
+        /// Method to add timeout
+        /// </summary>
+        /// <param name="timeout"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetTimeout(int timeout)
+        {
+            Timeout = timeout;
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the url
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequest SetUrl(string url)
+        {
+            Url = url;
+            return this;
+        }
+
+        private static string AddParameters(string toUrl, IDictionary<string, string> withParams)
+        {
+            var parameters = "";
+            foreach (var biConsumer in withParams)
+            {
+                var key = Uri.EscapeDataString(biConsumer.Key);
+                var value = Uri.EscapeDataString(biConsumer.Value);
+                parameters += key + "=" + value + "&";
+            }
+            if (parameters.Length >= 0) parameters.Remove(parameters.Length - 1);
+            if (parameters.Length >= 0) parameters = "?" + parameters;
+            return toUrl + parameters;
         }
     }
 }

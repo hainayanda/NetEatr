@@ -10,11 +10,28 @@ namespace NetEatr.Base
     public interface IHttpRequestWithBody<T> : IHttpRequest<T> where T : IHttpExecutor
     {
         /// <summary>
+        /// Gets or sets the body.
+        /// </summary>
+        /// <value>
+        /// The body.
+        /// </value>
+        string Body { get; set; }
+
+        /// <summary>
         /// Method to add string body
         /// </summary>
         /// <param name="body"></param>
         /// <returns>itself</returns>
         T AddBody(string body);
+
+        /// <summary>
+        /// Method to add form url as body
+        /// it will be encoded to url form
+        /// itl will set the content into urlformencoded
+        /// </summary>
+        /// <param name="forms"></param>
+        /// <returns>itself</returns>
+        T AddFormUrlEncoded(IDictionary<string, string> forms);
 
         /// <summary>
         /// Method to add object as body
@@ -27,15 +44,6 @@ namespace NetEatr.Base
         T AddJsonBody<V>(V obj);
 
         /// <summary>
-        /// Method to add form url as body
-        /// it will be encoded to url form
-        /// itl will set the content into urlformencoded
-        /// </summary>
-        /// <param name="forms"></param>
-        /// <returns>itself</returns>
-        T AddFormUrlEncoded(Dictionary<string, string> forms);
-
-        /// <summary>        
         /// /// Method to add xml as body
         /// itl will set the content into xml
         /// </summary>
