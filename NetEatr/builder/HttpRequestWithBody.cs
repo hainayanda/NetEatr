@@ -1,43 +1,117 @@
-﻿using System;
+﻿using NetEatr.Base;
+using NetEatr.Digester;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using NetEatr.Digester;
-using Newtonsoft.Json;
-using NetEatr.Base;
 using System.Xml;
 
 namespace NetEatr.Builder
 {
     /// <summary>
-    /// 
+    /// Http Request with body
     /// </summary>
     public class HttpRequestWithBody : IHttpRequestWithBody<HttpRequestWithBody>
     {
-        private HttpRequest httpRequestDelegate;
+        private string _Body;
+
+        private HttpRequest Delegate;
+
+        private Action<HttpWebRequest> OnBeforeSending = (HttpWebRequest request) => { };
+
         internal HttpRequestWithBody(string method)
         {
-            httpRequestDelegate = new HttpRequest(method);
+            Delegate = new HttpRequest(method);
         }
 
         /// <summary>
-        /// 
+        /// Gets or sets the body.
+        /// </summary>
+        /// <value>
+        /// The body.
+        /// </value>
+        /// <exception cref="ArgumentNullException">Body cannot be null</exception>
+        public string Body
+        {
+            get => _Body;
+            set
+            {
+                if (value == null) throw new ArgumentNullException("Body cannot be null");
+                else _Body = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the headers.
+        /// </summary>
+        /// <value>
+        /// The headers.
+        /// </value>
+        public IDictionary<string, string> Headers
+        {
+            get => Delegate.Headers;
+            set => Delegate.Headers = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the parameters.
+        /// </summary>
+        /// <value>
+        /// The parameters.
+        /// </value>
+        public IDictionary<string, string> Parameters
+        {
+            get => Delegate.Parameters;
+            set => Delegate.Parameters = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the timeout.
+        /// </summary>
+        /// <value>
+        /// The timeout.
+        /// </value>
+        public int Timeout
+        {
+            get => Delegate.Timeout;
+            set => Delegate.Timeout = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        public string Url
+        {
+            get => Delegate.Url;
+            set => Delegate.Url = value;
+        }
+
+        /// <summary>
+        /// Method to add authorization
+        /// it will automatically using a bearer oAuth authorization
         /// </summary>
         /// <param name="token"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequestWithBody AddAuthorization(string token)
         {
-            httpRequestDelegate.AddAuthorization(token);
+            Delegate.AddAuthorization(token);
             return this;
         }
 
-        private string Body;
         /// <summary>
-        /// 
+        /// Method to add string body
         /// </summary>
         /// <param name="body"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequestWithBody AddBody(string body)
         {
             Body = body;
@@ -45,11 +119,16 @@ namespace NetEatr.Builder
         }
 
         /// <summary>
-        /// 
+        /// Method to add form url as body
+        /// it will be encoded to url form
+        /// itl will set the content into urlformencoded
         /// </summary>
         /// <param name="forms"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody AddFormUrlEncoded(Dictionary<string, string> forms)
+        /// <returns>
+        /// itself
+        /// </returns>
+        /// <exception cref="ArgumentNullException">Forms cannot be null</exception>
+        public HttpRequestWithBody AddFormUrlEncoded(IDictionary<string, string> forms)
         {
             if (forms == null) throw new ArgumentNullException("Forms cannot be null");
             var form = "";
@@ -65,35 +144,29 @@ namespace NetEatr.Builder
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="xml"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody AddXmlBody(XmlDocument xml)
-        {
-            Body = xml.ToString();
-            return AddHeaders("content-type", "text/xml; encoding='utf-8'");
-
-        }
-
-        /// <summary>
-        /// 
+        /// Method to add headers
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequestWithBody AddHeaders(string key, string value)
         {
-            httpRequestDelegate.AddHeaders(key, value);
+            Delegate.AddHeaders(key, value);
             return this;
         }
 
         /// <summary>
-        /// 
+        /// Method to add object as body
+        /// it will be parsed to Json
+        /// it will set the content into application/json
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <param name="obj"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequestWithBody AddJsonBody<V>(V obj)
         {
             Body = JsonConvert.SerializeObject(obj);
@@ -101,107 +174,67 @@ namespace NetEatr.Builder
         }
 
         /// <summary>
-        /// 
+        /// Method to add parameter
+        /// it will be automatically encoded the parameter
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequestWithBody AddParam(string key, string value)
         {
-            httpRequestDelegate.AddParam(key, value);
+            Delegate.AddParam(key, value);
             return this;
         }
 
         /// <summary>
-        /// 
+        /// Method to add xml as body
+        /// itl will set the content into xml
         /// </summary>
-        /// <param name="headers"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody SetHeaders(Dictionary<string, string> headers)
+        /// <param name="xml"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody AddXmlBody(XmlDocument xml)
         {
-            httpRequestDelegate.SetHeaders(headers);
-            return this;
-        }
-
-        Action<HttpWebRequest> OnBeforeSending = (HttpWebRequest request) => { };
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onBeforeSending"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody SetOnBeforeSending(Action<HttpWebRequest> onBeforeSending)
-        {
-            OnBeforeSending = onBeforeSending;
-            return this;
+            Body = xml.ToString();
+            return AddHeaders("content-type", "text/xml; encoding='utf-8'");
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onException"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody SetOnException(Action<Exception> onException)
-        {
-            httpRequestDelegate.SetOnException(onException);
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onProgress"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody SetOnProgress(Action<float> onProgress)
-        {
-            httpRequestDelegate.SetOnProgress(onProgress);
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody SetParams(Dictionary<string, string> parameters)
-        {
-            httpRequestDelegate.SetParams(parameters);
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="timeout"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody SetTimeout(int timeout)
-        {
-            httpRequestDelegate.SetTimeout(timeout);
-            return this;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="url"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody SetUrl(string url)
-        {
-            httpRequestDelegate.SetUrl(url);
-            return this;
-        }
-
-        /// <summary>
-        /// 
+        /// Method to execute HttpRequest asynchronously
         /// </summary>
         public void AsyncExecute()
         {
-            httpRequestDelegate.AsyncExecute();
+            Delegate.AsyncExecute();
         }
 
         /// <summary>
-        /// 
+        /// Method to execute HttpRequest asynchronously
         /// </summary>
-        /// <returns></returns>
+        /// <param name="onFinished">Delegate to run when execution is finished</param>
+        public void AsyncExecute(Action<Response> onFinished)
+        {
+            Delegate.AsyncExecute(onFinished);
+        }
+
+        /// <summary>
+        /// Method to execute HttpRequest asynchronously
+        /// </summary>
+        /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
+        /// <param name="onFinished">Delegate to run when execution is finished</param>
+        public void AsyncExecute<T>(Action<RestResponse<T>> onFinished)
+        {
+            Delegate.AsyncExecute(onFinished);
+        }
+
+        /// <summary>
+        /// Method to execute HttpRequest synchronously
+        /// </summary>
+        /// <returns>
+        /// Response object
+        /// </returns>
         public Response AwaitExecute()
         {
             Action<HttpWebRequest> onBeforeSendingOverride = (HttpWebRequest request) =>
@@ -212,15 +245,17 @@ namespace NetEatr.Builder
                 stream.Write(bytes, 0, bytes.Length);
                 OnBeforeSending(request);
             };
-            httpRequestDelegate.SetOnBeforeSending(onBeforeSendingOverride);
-            return httpRequestDelegate.AwaitExecute();
+            Delegate.SetOnBeforeSending(onBeforeSendingOverride);
+            return Delegate.AwaitExecute();
         }
 
         /// <summary>
-        /// 
+        /// Method to execute HttpRequest synchronously
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
+        /// <returns>
+        /// RestResponse of T
+        /// </returns>
         public RestResponse<T> AwaitExecute<T>()
         {
             Action<HttpWebRequest> onBeforeSendingOverride = (HttpWebRequest request) =>
@@ -231,79 +266,163 @@ namespace NetEatr.Builder
                 stream.Write(bytes, 0, bytes.Length);
                 OnBeforeSending(request);
             };
-            httpRequestDelegate.SetOnBeforeSending(onBeforeSendingOverride);
-            return httpRequestDelegate.AwaitExecute<T>();
+            Delegate.SetOnBeforeSending(onBeforeSendingOverride);
+            return Delegate.AwaitExecute<T>();
         }
 
         /// <summary>
-        /// 
+        /// Method to get asynchronous execution in form of task
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Task which have return type of Response
+        /// </returns>
         public Task<Response> GetAsyncExecute()
         {
-            return httpRequestDelegate.GetAsyncExecute();
+            return Delegate.GetAsyncExecute();
         }
 
         /// <summary>
-        /// 
+        /// Method to get asynchronous execution in form of task
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <typeparam name="T">Type of object generated for Json Parsing</typeparam>
+        /// <returns>
+        /// Task which have return type of RestResponse of T
+        /// </returns>
         public Task<RestResponse<T>> GetAsyncExecute<T>()
         {
-            return httpRequestDelegate.GetAsyncExecute<T>();
+            return Delegate.GetAsyncExecute<T>();
         }
 
         /// <summary>
-        /// 
+        /// Method to set headers
         /// </summary>
-        /// <param name="onFinished"></param>
-        public void AsyncExecute(Action<Response> onFinished)
+        /// <param name="headers">dictionary of header in form of key - value</param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody SetHeaders(IDictionary<string, string> headers)
         {
-            httpRequestDelegate.AsyncExecute(onFinished);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="onFinished"></param>
-        public void AsyncExecute<T>(Action<RestResponse<T>> onFinished)
-        {
-            httpRequestDelegate.AsyncExecute(onFinished);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="onTimeout"></param>
-        /// <returns></returns>
-        public HttpRequestWithBody SetOnTimeout(Action onTimeout)
-        {
-            httpRequestDelegate.SetOnTimeout(onTimeout);
+            Delegate.SetHeaders(headers);
             return this;
         }
 
         /// <summary>
-        /// 
+        /// Method to set delegate to run right before sending
+        /// </summary>
+        /// <param name="onBeforeSending"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody SetOnBeforeSending(Action<HttpWebRequest> onBeforeSending)
+        {
+            OnBeforeSending = onBeforeSending;
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the delegate to run rigth after exception
+        /// </summary>
+        /// <param name="onException"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody SetOnException(Action<Exception> onException)
+        {
+            Delegate.SetOnException(onException);
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set delegate to run every progress
+        /// progress start with 0 and end in 1
+        /// </summary>
+        /// <param name="onProgress"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody SetOnProgress(Action<float> onProgress)
+        {
+            Delegate.SetOnProgress(onProgress);
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the delegate to run right after get response
         /// </summary>
         /// <typeparam name="V"></typeparam>
         /// <param name="onResponded"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequestWithBody SetOnResponded<V>(Action<RestResponse<V>> onResponded)
         {
-            httpRequestDelegate.SetOnResponded(onResponded);
+            Delegate.SetOnResponded(onResponded);
             return this;
         }
 
         /// <summary>
-        /// 
+        /// Method to set the delegate to run right after get response
         /// </summary>
         /// <param name="onResponded"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// itself
+        /// </returns>
         public HttpRequestWithBody SetOnResponded(Action<Response> onResponded)
         {
-            httpRequestDelegate.SetOnResponded(onResponded);
+            Delegate.SetOnResponded(onResponded);
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the delegate to run right after timeout
+        /// </summary>
+        /// <param name="onTimeout"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody SetOnTimeout(Action onTimeout)
+        {
+            Delegate.SetOnTimeout(onTimeout);
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set url parameter
+        /// it will be automatically encoded the parameter
+        /// </summary>
+        /// <param name="parameters">dictionary of key - value</param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody SetParams(IDictionary<string, string> parameters)
+        {
+            Delegate.SetParams(parameters);
+            return this;
+        }
+
+        /// <summary>
+        /// Method to add timeout
+        /// </summary>
+        /// <param name="timeout"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody SetTimeout(int timeout)
+        {
+            Delegate.SetTimeout(timeout);
+            return this;
+        }
+
+        /// <summary>
+        /// Method to set the url
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns>
+        /// itself
+        /// </returns>
+        public HttpRequestWithBody SetUrl(string url)
+        {
+            Delegate.SetUrl(url);
             return this;
         }
     }
