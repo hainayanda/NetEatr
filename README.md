@@ -51,7 +51,7 @@ dotnet add package NetEatr --version 0.0.3
 ## Usage Example
 ## Synchronous
 Build the object using HttpRequestBuilder and then execute  
-If your response contains some Json, you can use RestResponse object and passing the model class when execute  
+If your response contains some Json, you can pass your Model as Generic attribute
 
 ```cs
 //HttpGet
