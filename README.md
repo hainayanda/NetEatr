@@ -132,7 +132,7 @@ HttpRequestBuilder.HttpPost.SetUrl("http://your.url.here")
     })
     .SetOnResponded((response) => {
         //response is Response object
-        if you pass Generic parameter it will be RestResponse<Parameter> object
+        //if you pass Generic parameter it will be RestResponse<Parameter> object
     })
     .AsyncExecute((response) => {
         //YOUR CODE HERE
